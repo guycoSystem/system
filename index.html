@@ -8,29 +8,23 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Rubik', sans-serif; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
-        
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .emoji-img { font-size: 3rem; line-height: 1; }
-        
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-slow { animation: spin-slow 12s linear infinite; }
-        
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(20px) translateX(-50%); }
-            to { opacity: 1; transform: translateY(0) translateX(-50%); }
-        }
+        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
 
-        /* עדכון רקע: סגול עשיר ומט, פחות כחול */
+        /* רקע סגול חציל עמוק ומט */
         .bg-theme {
-            background-color: #2D1B4E; 
-            background-image: linear-gradient(180deg, #2D1B4E 0%, #1A0B2E 100%);
+            background-color: #240a35; 
+            background-image: linear-gradient(180deg, #240a35 0%, #11031a 100%);
         }
     </style>
 </head>
@@ -40,18 +34,36 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
+        // --- הגדרות מעקב (הנתונים שלך) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcOi6aEwWsAPAqz1_1bsxxqjj2drKrFlA",
+            authDomain: "gadgetorobject.firebaseapp.com",
+            projectId: "gadgetorobject",
+            storageBucket: "gadgetorobject.firebasestorage.app",
+            messagingSenderId: "945574243375",
+            appId: "1:945574243375:web:7923c1a90d933906c1eada",
+            measurementId: "G-QGJ8XZTZRL"
+        };
+
+        // --- אתחול המערכת ---
+        let analytics = null;
+        try {
+            if (firebaseConfig.apiKey) {
+                firebase.initializeApp(firebaseConfig);
+                analytics = firebase.analytics();
+                console.log("Analytics Initialized 🚀");
+            }
+        } catch (e) { console.error("Analytics Error:", e); }
+
+        const logAction = (eventName, params) => {
+            if (analytics) {
+                analytics.logEvent(eventName, params);
+            }
+        };
+
         // --- אייקונים ---
-        const IconBase = ({ children, size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
-        );
-
-        const CogSimple = ({ className, size=24 }) => (
-             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-             </svg>
-        );
-
+        const IconBase = ({ children, size = 24, className = "" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>);
+        const CogSimple = ({ className, size=24 }) => (<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>);
         const Search = (props) => <IconBase {...props}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></IconBase>;
         const ShoppingBag = (props) => <IconBase {...props}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></IconBase>;
         const Tag = (props) => <IconBase {...props}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></IconBase>;
@@ -239,7 +251,10 @@
                   const found = productsData.find(p => p.id === id);
                   if (found) {
                       setLandingProduct(found);
+                      logAction('view_product', { id: found.id, name: found.title.en });
                   }
+              } else {
+                  logAction('page_view', { tab: 'home' });
               }
               document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
               document.documentElement.lang = lang;
@@ -329,6 +344,7 @@
                   document.execCommand('copy');
                   setShowToast(true);
                   setTimeout(() => setShowToast(false), 3000);
+                  logAction('share_link', { id });
               } catch (err) {
                   alert('העתקה ידנית: ' + url);
               } finally {
@@ -359,7 +375,7 @@
                             </div>
 
                             {/* כרטיסיית דף נחיתה - סגול בהיר מט */}
-                            <div className="bg-[#4c2c69] rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden group border border-white/5">
+                            <div className="bg-[#3b2152] rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden group border border-white/5">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 opacity-70"></div>
                                 <div className="text-8xl mb-6 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110">{landingProduct.image}</div>
                                 <div className="inline-block bg-black/40 text-yellow-300 border border-white/10 px-4 py-1.5 rounded-full text-lg font-mono font-bold mb-4 shadow-lg">
@@ -372,12 +388,12 @@
 
                             <div className="space-y-3">
                                 {landingProduct.temuLink && (
-                                    <a href={landingProduct.temuLink} target="_blank" className="block w-full bg-gradient-to-r from-[#fb7701] to-[#ff9900] hover:from-[#e06a00] hover:to-[#e06a00] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
+                                    <a href={landingProduct.temuLink} target="_blank" onClick={() => logAction('click_temu', { id: landingProduct.id })} className="block w-full bg-gradient-to-r from-[#fb7701] to-[#ff9900] hover:from-[#e06a00] hover:to-[#e06a00] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <Tag size={24} /> {t.buyOnTemu}
                                     </a>
                                 )}
                                 {landingProduct.aliLink && (
-                                    <a href={landingProduct.aliLink} target="_blank" className="block w-full bg-gradient-to-r from-[#ff4747] to-[#ff2d1d] hover:from-[#d63b3b] hover:to-[#d63b3b] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
+                                    <a href={landingProduct.aliLink} target="_blank" onClick={() => logAction('click_ali', { id: landingProduct.id })} className="block w-full bg-gradient-to-r from-[#ff4747] to-[#ff2d1d] hover:from-[#d63b3b] hover:to-[#d63b3b] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <ExternalLink size={24} /> {t.buyOnAli}
                                     </a>
                                 )}
@@ -411,14 +427,14 @@
                     <CogSimple size={14} className="text-white/70 animate-spin-slow" />
                     <span className="font-bold tracking-[0.2em] text-white/50 text-[10px] uppercase">Ecosystem</span>
                  </div>
-                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 2.3</div>
+                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 2.4</div>
                  <button onClick={toggleLang} className="absolute ltr:right-4 rtl:right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/50 hover:text-white transition-colors border border-white/10 px-2 py-0.5 rounded">
                     {lang === 'he' ? 'EN' : 'HE'}
                  </button>
               </div>
 
               {/* Header */}
-              <header className="flex-none sticky top-0 z-50 bg-[#2D1B4E]/95 backdrop-blur border-b border-white/5 shadow-lg h-16">
+              <header className="flex-none sticky top-0 z-50 bg-[#240a35]/95 backdrop-blur border-b border-white/5 shadow-lg h-16">
                 <div className="max-w-md mx-auto px-4 h-full flex items-center justify-between">
                   {getHeaderContent()}
                   <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/80">
@@ -426,7 +442,7 @@
                   </button>
                 </div>
                 {isMenuOpen && (
-                  <div className="absolute top-16 left-0 right-0 bg-[#2D1B4E] border-b border-white/10 p-4 shadow-2xl animate-in slide-in-from-top-5 z-50">
+                  <div className="absolute top-16 left-0 right-0 bg-[#240a35] border-b border-white/10 p-4 shadow-2xl animate-in slide-in-from-top-5 z-50">
                     <nav className="flex flex-col gap-2">
                       <button onClick={toggleLang} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 font-bold border border-white/10 justify-center mb-2 text-white/80">
                         <Globe size={20} /> {lang === 'he' ? 'Switch to English' : 'עבור לעברית'}
@@ -461,7 +477,7 @@
 
                     <div className="grid gap-4">
                       {filteredAndSortedProducts.map((product) => (
-                        <div key={product.id} className="bg-[#4c2c69] rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all group relative border border-white/5">
+                        <div key={product.id} className="bg-[#3b2152] rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all group relative border border-white/5">
                           {product.isPinned && sortOrder === 'default' && (
                               <div className={`absolute top-2 ${lang === 'he' ? 'left-2' : 'right-2'} z-10`}>
                                   <span className="text-yellow-400 drop-shadow-md filter saturate-150">📌</span>
@@ -491,7 +507,7 @@
                             {/* AliExpress Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/ali">
                                 {product.aliLink ? (
-                                    <a href={product.aliLink} target="_blank" className="flex items-center gap-2 text-sm font-medium text-[#ff4747] group-hover/ali:brightness-110 flex-1 justify-center h-full">
+                                    <a href={product.aliLink} target="_blank" onClick={() => logAction('click_ali', { id: product.id })} className="flex items-center gap-2 text-sm font-medium text-[#ff4747] group-hover/ali:brightness-110 flex-1 justify-center h-full">
                                         <ExternalLink size={14} /> AliExpress
                                     </a>
                                 ) : (
@@ -515,7 +531,7 @@
                             {/* Temu Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/temu">
                                 {product.temuLink ? (
-                                    <a href={product.temuLink} target="_blank" className="flex items-center gap-2 text-sm font-medium text-yellow-400 group-hover/temu:text-yellow-300 flex-1 justify-center h-full">
+                                    <a href={product.temuLink} target="_blank" onClick={() => logAction('click_temu', { id: product.id })} className="flex items-center gap-2 text-sm font-medium text-yellow-400 group-hover/temu:text-yellow-300 flex-1 justify-center h-full">
                                         <Tag size={14} /> Temu
                                     </a>
                                 ) : (
@@ -564,7 +580,7 @@
                         {t.showManifesto}
                       </div>
 
-                      <a href="https://linktr.ee/FuckBaSystem" target="_blank" className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-pink-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+                      <a href="https://linktr.ee/FuckBaSystem" target="_blank" onClick={() => logAction('click_tickets', {})} className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-pink-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
                         <Ticket size={20} />
                         לכרטיסים ופרטים נוספים
                       </a>
@@ -574,16 +590,16 @@
 
                 {activeTab === 'workshops' && (
                   <div className="p-4 pb-6 animate-in fade-in zoom-in-95 duration-300">
-                    <div className="bg-gradient-to-br from-[#155e75] to-[#083344] border border-cyan-500/20 rounded-3xl p-6 text-center space-y-6 relative overflow-hidden shadow-2xl">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-300 opacity-50"></div>
-                      <div className="w-16 h-16 bg-cyan-900/30 rounded-2xl mx-auto flex items-center justify-center text-cyan-200 mb-2 border border-cyan-500/20 shadow-lg shadow-cyan-500/10"><Briefcase size={32} /></div>
-                      <div className="space-y-2 relative z-10"><h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-lg">{t.workshopTitle} {t.workshopTitleSuffix}</h2><span className="text-xs font-bold text-cyan-200 bg-cyan-900/40 border border-cyan-500/20 px-3 py-1 rounded-full uppercase tracking-wider">{t.workshopSubtitle}</span></div>
-                      <div className="space-y-4 text-gray-100 text-sm leading-relaxed font-light"><p>{t.workshopDesc1}<br/>{t.workshopDesc2}</p><p className="font-bold text-white">{t.workshopMain}</p><ul className="text-start space-y-2 bg-black/20 p-4 rounded-xl border border-cyan-500/10 mx-2"><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet1}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet2}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet3}</li></ul></div>
+                    <div className="bg-gradient-to-br from-[#0c4a6e] to-[#082f49] border border-cyan-500/30 rounded-3xl p-6 text-center space-y-6 relative overflow-hidden shadow-2xl">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-300 opacity-60"></div>
+                      <div className="w-16 h-16 bg-[#0e7490]/40 rounded-2xl mx-auto flex items-center justify-center text-cyan-200 mb-2 border border-cyan-500/30 shadow-lg shadow-cyan-500/20"><Briefcase size={32} /></div>
+                      <div className="space-y-2 relative z-10"><h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-lg">{t.workshopTitle} {t.workshopTitleSuffix}</h2><span className="text-xs font-bold text-cyan-200 bg-[#164e63]/60 border border-cyan-500/30 px-3 py-1 rounded-full uppercase tracking-wider">{t.workshopSubtitle}</span></div>
+                      <div className="space-y-4 text-gray-100 text-sm leading-relaxed font-light"><p>{t.workshopDesc1}<br/>{t.workshopDesc2}</p><p className="font-bold text-white">{t.workshopMain}</p><ul className="text-start space-y-2 bg-black/20 p-4 rounded-xl border border-cyan-500/20 mx-2"><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet1}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet2}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet3}</li></ul></div>
                       {/* הוראות להחלפת מספר טלפון:
-                          1. שנה את המספר למטה (972507799464) למספר האמיתי שלך.
+                          1. שנה את המספר למטה (9725XXXXXXXX) למספר האמיתי שלך.
                           2. אל תשכח את הקידומת 972 בהתחלה (בלי אפס).
                       */}
-                      <a href="https://wa.me/972500000000" target="_blank" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+                      <a href="https://wa.me/972500000000" target="_blank" onClick={() => logAction('click_whatsapp', {})} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
                         <MessageCircle size={20} />
                         {t.workshopCTA}
                       </a>
@@ -594,9 +610,9 @@
               </main>
 
               <nav className="flex-none bg-[#2D1B4E] border-t border-white/5 h-16 max-w-md mx-auto w-full flex justify-around items-center z-50">
-                <button onClick={() => setActiveTab('products')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'products' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : 'text-white/30 hover:text-white/60'}`}><ShoppingBag size={22} /><span className="text-[10px] font-medium">{t.navShop}</span></button>
-                <button onClick={() => setActiveTab('tickets')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'tickets' ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Ticket size={22} /><span className="text-[10px] font-medium">{t.navShow}</span></button>
-                <button onClick={() => setActiveTab('workshops')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'workshops' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Briefcase size={22} /><span className="text-[10px] font-medium">{t.navWorkshops}</span></button>
+                <button onClick={() => { setActiveTab('products'); logAction('nav_click', { tab: 'products' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'products' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : 'text-white/30 hover:text-white/60'}`}><ShoppingBag size={22} /><span className="text-[10px] font-medium">{t.navShop}</span></button>
+                <button onClick={() => { setActiveTab('tickets'); logAction('nav_click', { tab: 'tickets' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'tickets' ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Ticket size={22} /><span className="text-[10px] font-medium">{t.navShow}</span></button>
+                <button onClick={() => { setActiveTab('workshops'); logAction('nav_click', { tab: 'workshops' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'workshops' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Briefcase size={22} /><span className="text-[10px] font-medium">{t.navWorkshops}</span></button>
               </nav>
             </div>
           );
