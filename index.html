@@ -32,6 +32,8 @@
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-slow { animation: spin-slow 12s linear infinite; }
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
+        @keyframes heart-beat { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .animate-heart { animation: heart-beat 0.3s ease-in-out; }
 
         /* רקע סגול חציל עמוק ומט */
         .bg-theme {
@@ -46,84 +48,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- נתוני המוצרים (מוגדרים מחוץ לקומפוננטה לגישה מהירה) ---
-        const productsData = [
-             {
-              id: '104',
-              title: { he: 'תותן (שולף תותים)', en: 'Strawberry Huller' },
-              price: '~6₪',
-              category: 'kitchen',
-              image: '🍓',
-              temuLink: 'https://temu.to/k/egmhtt9rzj0',
-              aliLink: 'https://s.click.aliexpress.com/e/_c2yHcfCR',
-              description: { he: 'מוציא את העוקץ בלי ללכלך את הידיים. גאוני ופשוט.', en: 'Removes the stem without dirtying your hands. Genius and simple.' },
-              status: 'nice',
-              isPinned: true, 
-              dateAdded: '2023-01-01'
-            },
-            {
-              id: '101',
-              title: { he: 'שפריצר שמן זית', en: 'Olive Oil Sprayer' },
-              price: '~18₪ - 30₪',
-              category: 'kitchen',
-              image: '🫒',
-              temuLink: 'https://temu.to/k/eskv4ma203l',
-              aliLink: 'https://s.click.aliexpress.com/e/_c4OHgMnt',
-              description: { he: 'מתיז שמן זית שני מצבים. חוסך קלוריות ומונע בלאגן.', en: 'Two-mode olive oil sprayer. Saves calories and prevents mess.' },
-              status: 'high',
-              dateAdded: '2023-10-25'
-            },
-            {
-              id: '102',
-              title: { he: 'סל כביסה מתקפל', en: 'Collapsible Laundry Basket' },
-              price: '~25₪ - 50₪',
-              category: 'home',
-              image: '🧺',
-              temuLink: 'https://temu.to/k/ewtyxvdcjoc', 
-              aliLink: '', 
-              description: { he: 'סל כביסה מתקפל לעובי דק. לשים לב לגודל לפני שמזמינים.', en: 'Collapsible laundry basket, folds thin. Check dimensions before ordering.' },
-              status: 'high',
-              dateAdded: '2023-10-26'
-            },
-            {
-              id: '103',
-              title: { he: 'תבנית ביצים נשלפת', en: 'Retractable Egg Drawer' },
-              price: '~18₪ - 55₪',
-              category: 'kitchen',
-              image: '🥚',
-              temuLink: 'https://temu.to/k/ewaw38cr21j',
-              aliLink: 'https://s.click.aliexpress.com/e/_c3sDh6af',
-              description: { he: 'מגירה נשלפת למקרר, עושה סדר וחוסך מקום. המחיר משתנה לפי מסילות/קומות.', en: 'Retractable drawer for the fridge, organizes and saves space. Price varies by size/tiers.' },
-              status: 'norm',
-              dateAdded: '2023-10-27'
-            },
-            {
-              id: '105',
-              title: { he: 'צנצנת חמוצים מתהפכת', en: 'Flipping Pickle Jar' },
-              price: '~25₪ - 45₪',
-              category: 'kitchen',
-              image: '🥒',
-              temuLink: 'https://temu.to/k/el0byhgj7sy',
-              aliLink: 'https://s.click.aliexpress.com/e/_c4q30Xp9',
-              description: { he: 'פטנט גאוני שמפריד את המים מהחמוצים כשרוצים לנשנש, ומחזיר אותם למים כשמסיימים.', en: 'Genius patent that separates juice from pickles for serving, and flips back for storage.' },
-              status: 'norm',
-              dateAdded: '2023-10-28'
-            },
-            {
-              id: '901',
-              title: { he: 'לוח קיפול', en: 'Folding Board' },
-              price: '~25₪ - 45₪',
-              category: 'munfatzim',
-              image: '👕',
-              temuLink: 'https://temu.to/k/ez52sauj9vx',
-              aliLink: 'https://s.click.aliexpress.com/e/_c3pziYnH',
-              description: { he: 'מסייע לקיפול חולצות בצורה מסודרת וישרה. יכול לסייע לכם אם אתם מתקשים אבל כנראה שבסוף תעדיפו פשוט לקפל לבד.', en: 'Helps fold shirts neatly and straight. Can assist if you struggle, but you\'ll probably prefer folding manually in the end.' },
-              status: 'nice',
-              dateAdded: '2023-10-29'
-            }
-        ];
-
-        // --- הגדרות מעקב ---
+        // --- הגדרות מעקב (הנתונים שלך) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDcOi6aEwWsAPAqz1_1bsxxqjj2drKrFlA",
             authDomain: "gadgetorobject.firebaseapp.com",
@@ -146,7 +71,12 @@
 
         const logAction = (eventName, params) => {
             if (analytics) {
-                analytics.logEvent(eventName, { ...params, debug_mode: true });
+                // דיווח לגוגל (עם מצב דיבאג)
+                const eventParams = { ...params, debug_mode: true };
+                analytics.logEvent(eventName, eventParams);
+                console.log(`🔥 Sending Firebase Event: ${eventName}`, eventParams);
+            } else {
+                console.warn("Analytics not ready yet");
             }
         };
 
@@ -168,83 +98,24 @@
         const ArrowRight = (props) => <IconBase {...props}><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></IconBase>;
         const ArrowLeft = (props) => <IconBase {...props}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></IconBase>;
         const Share2 = (props) => <IconBase {...props}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></IconBase>;
+        const Heart = (props) => <IconBase {...props}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></IconBase>;
+
+        // --- נתוני המוצרים ---
+        const productsData = [
+             { id: '104', title: { he: 'תותן (שולף תותים)', en: 'Strawberry Huller' }, price: '~6₪', category: 'kitchen', image: '🍓', temuLink: 'https://temu.to/k/egmhtt9rzj0', aliLink: 'https://s.click.aliexpress.com/e/_c2yHcfCR', description: { he: 'מוציא את העוקץ בלי ללכלך את הידיים. גאוני ופשוט.', en: 'Removes the stem without dirtying your hands. Genius and simple.' }, status: 'nice', isPinned: true, dateAdded: '2023-01-01' },
+             { id: '101', title: { he: 'שפריצר שמן זית', en: 'Olive Oil Sprayer' }, price: '~18₪ - 30₪', category: 'kitchen', image: '🫒', temuLink: 'https://temu.to/k/eskv4ma203l', aliLink: 'https://s.click.aliexpress.com/e/_c4OHgMnt', description: { he: 'מתיז שמן זית שני מצבים. חוסך קלוריות ומונע בלאגן.', en: 'Two-mode olive oil sprayer. Saves calories and prevents mess.' }, status: 'high', dateAdded: '2023-10-25' },
+             { id: '102', title: { he: 'סל כביסה מתקפל', en: 'Collapsible Laundry Basket' }, price: '~25₪ - 50₪', category: 'home', image: '🧺', temuLink: 'https://temu.to/k/ewtyxvdcjoc', aliLink: '', description: { he: 'סל כביסה מתקפל לעובי דק. לשים לב לגודל לפני שמזמינים.', en: 'Collapsible laundry basket, folds thin. Check dimensions before ordering.' }, status: 'high', dateAdded: '2023-10-26' },
+             { id: '103', title: { he: 'תבנית ביצים נשלפת', en: 'Retractable Egg Drawer' }, price: '~18₪ - 55₪', category: 'kitchen', image: '🥚', temuLink: 'https://temu.to/k/ewaw38cr21j', aliLink: 'https://s.click.aliexpress.com/e/_c3sDh6af', description: { he: 'מגירה נשלפת למקרר, עושה סדר וחוסך מקום. המחיר משתנה לפי מסילות/קומות.', en: 'Retractable drawer for the fridge, organizes and saves space. Price varies by size/tiers.' }, status: 'norm', dateAdded: '2023-10-27' },
+             { id: '105', title: { he: 'צנצנת חמוצים מתהפכת', en: 'Flipping Pickle Jar' }, price: '~25₪ - 45₪', category: 'kitchen', image: '🥒', temuLink: 'https://temu.to/k/el0byhgj7sy', aliLink: 'https://s.click.aliexpress.com/e/_c4q30Xp9', description: { he: 'פטנט גאוני שמפריד את המים מהחמוצים כשרוצים לנשנש, ומחזיר אותם למים כשמסיימים.', en: 'Genius patent that separates juice from pickles for serving, and flips back for storage.' }, status: 'norm', dateAdded: '2023-10-28' },
+             { id: '901', title: { he: 'לוח קיפול', en: 'Folding Board' }, price: '~25₪ - 45₪', category: 'munfatzim', image: '👕', temuLink: 'https://temu.to/k/ez52sauj9vx', aliLink: 'https://s.click.aliexpress.com/e/_c3pziYnH', description: { he: 'מסייע לקיפול חולצות בצורה מסודרת וישרה. יכול לסייע לכם אם אתם מתקשים אבל כנראה שבסוף תעדיפו פשוט לקפל לבד.', en: 'Helps fold shirts neatly and straight. Can assist if you struggle, but you\'ll probably prefer folding manually in the end.' }, status: 'nice', dateAdded: '2023-10-29' }
+        ];
 
         const content = {
             he: {
-                shopTitle: "חפץ",
-                shopTitleSuffix: "או חפיץ",
-                showTitle: "פאק בסיסטם",
-                showSubtitle: "קיצור תולדות הדפקט",
-                showManifesto: "כשסטנדפיסט מתוסכל עם תובנות מושחזות\nפוגש ארבעה קומיקאים מופרעים\nשלוקחים את הכל לקצה.\nפאק בסיסטם הוא מניפסט אבסורדי\nשמתעורר לחיים כדי לחגוג את הבעיה,\nלתת קצת יחס לחצי הכוס הריקה\nולנסות להנות גם ממה שאין.",
-                workshopTitle: "באג",
-                workshopTitleSuffix: "בסיסטם",
-                navShop: "חנות",
-                navShow: "מופע",
-                navWorkshops: "סדנאות",
-                searchPlaceholder: "חפש חפץ...",
-                catAll: "הכל",
-                catHome: "לבית",
-                catKitchen: "מטבח",
-                catGadgets: "גאדג'טים",
-                catMunfatzim: "חפיצים מונפצים",
-                recHigh: "מומלץ מאוד",
-                recNorm: "מומלץ",
-                recNice: "נחמד",
-                outOfStock: "אזל המלאי",
-                workshopSubtitle: "סדנאות לארגונים",
-                workshopDesc1: "רוצים להכניס באג בסיסטם של הארגון שלכם?",
-                workshopDesc2: "להעיר את הצוות, לשבור את השגרה ולהתחבר מחדש דרך הומור?",
-                workshopMain: "סדנאות חשיבה יצירתית, אימפרוב וסטוריטלינג בהנחיית גיא כהן.",
-                workshopBullet1: "שיפור התקשורת בצוות",
-                workshopBullet2: "פיתוח יצירתיות ופתרון בעיות",
-                workshopBullet3: "המון הומור וכיף",
-                workshopCTA: "דברו איתי בוואטסאפ",
-                priceDisclaimer: "* המחירים משוערים ועשויים להשתנות בהתאם לספק, למידות ולמלאי.",
-                sortBy: "מיון לפי א-ב",
-                backToCatalog: "חזרה לקטלוג המלא",
-                directLinkTitle: "היי! הנה החפץ שחיפשת:",
-                buyOnAli: "קנה ב-AliExpress",
-                buyOnTemu: "קנה ב-Temu",
-                linkCopied: "ההודעה הועתקה! מוכנה להדבקה",
-                shareWhatsapp: "שתף את החפץ"
+                shopTitle: "חפץ", shopTitleSuffix: "או חפיץ", showTitle: "פאק בסיסטם", showSubtitle: "קיצור תולדות הדפקט", showManifesto: "כשסטנדפיסט מתוסכל עם תובנות מושחזות\nפוגש ארבעה קומיקאים מופרעים\nשלוקחים את הכל לקצה.\nפאק בסיסטם הוא מניפסט אבסורדי\nשמתעורר לחיים כדי לחגוג את הבעיה,\nלתת קצת יחס לחצי הכוס הריקה\nולנסות להנות גם ממה שאין.", workshopTitle: "באג", workshopTitleSuffix: "בסיסטם", navShop: "חנות", navShow: "מופע", navWorkshops: "סדנאות", searchPlaceholder: "חפש חפץ...", catAll: "הכל", catHome: "לבית", catKitchen: "מטבח", catGadgets: "גאדג'טים", catMunfatzim: "חפיצים מונפצים", catFavorites: "המועדפים שלי", recHigh: "מומלץ מאוד", recNorm: "מומלץ", recNice: "נחמד", outOfStock: "אזל המלאי", workshopSubtitle: "סדנאות לארגונים", workshopDesc1: "רוצים להכניס באג בסיסטם של הארגון שלכם?", workshopDesc2: "להעיר את הצוות, לשבור את השגרה ולהתחבר מחדש דרך הומור?", workshopMain: "סדנאות חשיבה יצירתית, אימפרוב וסטוריטלינג בהנחיית גיא כהן.", workshopBullet1: "שיפור התקשורת בצוות", workshopBullet2: "פיתוח יצירתיות ופתרון בעיות", workshopBullet3: "המון הומור וכיף", workshopCTA: "דברו איתי בוואטסאפ", priceDisclaimer: "* המחירים משוערים ועשויים להשתנות בהתאם לספק, למידות ולמלאי.", sortBy: "מיון לפי א-ב", backToCatalog: "חזרה לקטלוג המלא", directLinkTitle: "היי! הנה החפץ שחיפשת:", buyOnAli: "קנה ב-AliExpress", buyOnTemu: "קנה ב-Temu", linkCopied: "ההודעה הועתקה! מוכנה להדבקה", shareWhatsapp: "שתף את החפץ"
             },
             en: {
-                shopTitle: "Hafetz",
-                shopTitleSuffix: "Hafitz",
-                showTitle: "Fuck BaSystem",
-                showSubtitle: "A Brief History of the Defect",
-                showManifesto: "When a frustrated stand-up comedian with sharp insights\nmeets four disturbed comedians\nwho take everything to the edge.\nFuck BaSystem is an absurd manifesto\ncoming to life to celebrate the problem,\ngive some attention to the empty half of the glass\nand try to enjoy what isn't there.",
-                workshopTitle: "Bug",
-                workshopTitleSuffix: "In The System",
-                navShop: "Shop",
-                navShow: "Show",
-                navWorkshops: "Workshops",
-                searchPlaceholder: "Search item...",
-                catAll: "All",
-                catHome: "Home",
-                catKitchen: "Kitchen",
-                catGadgets: "Gadgets",
-                catMunfatzim: "Useless Gadgets",
-                recHigh: "Highly Recommended",
-                recNorm: "Recommended",
-                recNice: "Nice to Have",
-                outOfStock: "Out of Stock",
-                workshopSubtitle: "Corporate Workshops",
-                workshopDesc1: "Want to introduce a bug into your organization's system?",
-                workshopDesc2: "Wake up the team, break the routine, and reconnect through humor?",
-                workshopMain: "Creative thinking, improv, and storytelling workshops led by Guy Cohen.",
-                workshopBullet1: "Improving team communication",
-                workshopBullet2: "Developing creativity & problem solving",
-                workshopBullet3: "Lots of humor and fun",
-                workshopCTA: "Talk to me on WhatsApp",
-                priceDisclaimer: "* Prices are estimated and subject to change by supplier, size and stock.",
-                sortBy: "Sort A-Z",
-                backToCatalog: "Back to Full Catalog",
-                directLinkTitle: "Hey! Here is the item you looked for:",
-                buyOnAli: "Buy on AliExpress",
-                buyOnTemu: "Buy on Temu",
-                linkCopied: "Link Copied! Ready to paste.",
-                shareWhatsapp: "Share Item"
+                shopTitle: "Hafetz", shopTitleSuffix: "Hafitz", showTitle: "Fuck BaSystem", showSubtitle: "A Brief History of the Defect", showManifesto: "When a frustrated stand-up comedian with sharp insights\nmeets four disturbed comedians\nwho take everything to the edge.\nFuck BaSystem is an absurd manifesto\ncoming to life to celebrate the problem,\ngive some attention to the empty half of the glass\nand try to enjoy what isn't there.", workshopTitle: "Bug", workshopTitleSuffix: "In The System", navShop: "Shop", navShow: "Show", navWorkshops: "Workshops", searchPlaceholder: "Search item...", catAll: "All", catHome: "Home", catKitchen: "Kitchen", catGadgets: "Gadgets", catMunfatzim: "Useless Gadgets", catFavorites: "My Favorites", recHigh: "Highly Recommended", recNorm: "Recommended", recNice: "Nice to Have", outOfStock: "Out of Stock", workshopSubtitle: "Corporate Workshops", workshopDesc1: "Want to introduce a bug into your organization's system?", workshopDesc2: "Wake up the team, break the routine, and reconnect through humor?", workshopMain: "Creative thinking, improv, and storytelling workshops led by Guy Cohen.", workshopBullet1: "Improving team communication", workshopBullet2: "Developing creativity & problem solving", workshopBullet3: "Lots of humor and fun", workshopCTA: "Talk to me on WhatsApp", priceDisclaimer: "* Prices are estimated and subject to change by supplier, size and stock.", sortBy: "Sort A-Z", backToCatalog: "Back to Full Catalog", directLinkTitle: "Hey! Here is the item you looked for:", buyOnAli: "Buy on AliExpress", buyOnTemu: "Buy on Temu", linkCopied: "Link Copied! Ready to paste.", shareWhatsapp: "Share Item"
             }
         };
 
@@ -257,9 +128,12 @@
           const [sortOrder, setSortOrder] = useState('default');
           const [landingProduct, setLandingProduct] = useState(null);
           const [showToast, setShowToast] = useState(false);
+          const [favorites, setFavorites] = useState([]);
 
           useEffect(() => {
-              // מנגנון משתמשים חדשים
+              const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+              setFavorites(savedFavorites);
+
               const hasVisited = localStorage.getItem('has_visited_site');
               if (!hasVisited) {
                   logAction('new_visitor_arrival', { source: 'browser_check' });
@@ -283,6 +157,19 @@
 
           const t = content[lang];
 
+          const toggleFavorite = (productId) => {
+              let newFavorites;
+              if (favorites.includes(productId)) {
+                  newFavorites = favorites.filter(id => id !== productId);
+                  logAction('remove_from_wishlist', { id: productId });
+              } else {
+                  newFavorites = [...favorites, productId];
+                  logAction('add_to_wishlist', { id: productId });
+              }
+              setFavorites(newFavorites);
+              localStorage.setItem('favorites', JSON.stringify(newFavorites));
+          };
+
           const filteredAndSortedProducts = useMemo(() => {
             let filtered = productsData.filter(product => {
                 const title = product.title[lang].toLowerCase();
@@ -293,6 +180,8 @@
                 let matchesCategory = false;
                 if (selectedCategory === 'all') {
                     matchesCategory = product.category !== 'munfatzim'; 
+                } else if (selectedCategory === 'favorites') {
+                    matchesCategory = favorites.includes(product.id);
                 } else {
                     matchesCategory = product.category === selectedCategory;
                 }
@@ -311,7 +200,7 @@
                 });
             }
             return filtered;
-          }, [searchTerm, selectedCategory, lang, sortOrder]);
+          }, [searchTerm, selectedCategory, lang, sortOrder, favorites]);
 
           const getHeaderContent = () => {
             if (activeTab === 'tickets') {
@@ -342,6 +231,7 @@
                 <div className="w-8 h-8 bg-purple-500 rounded-sm flex items-center justify-center rotate-3 hover:rotate-0 transition-transform shadow-lg shadow-purple-500/30">
                   <span className="text-xl">📦</span>
                 </div>
+                {/* לוגו לבן נקי */}
                 <h1 className="font-black text-xl tracking-tighter text-white drop-shadow-md">{t.shopTitle} <span className="font-light text-purple-200">{t.shopTitleSuffix}</span></h1>
               </div>
             );
@@ -370,6 +260,39 @@
               } finally {
                   document.body.removeChild(input);
               }
+          };
+
+          // פונקציה משופרת להעתקת הודעה מלאה
+          const copyFullMessage = (product) => {
+              const url = window.location.origin + '/?id=' + product.id;
+              const text = `היי! הנה הלינק ל*${product.title.he}* שחיפשת:\n${url}\n\nיש שם אפשרות להזמין גם מטמו וגם מאלי אקספרס. תהנה!`;
+              
+              const textarea = document.createElement('textarea');
+              textarea.value = text;
+              textarea.style.position = 'fixed';
+              textarea.style.opacity = '0';
+              document.body.appendChild(textarea);
+              textarea.focus();
+              textarea.select();
+              
+              try {
+                  document.execCommand('copy');
+                  setShowToast(true);
+                  setTimeout(() => setShowToast(false), 3000);
+                  logAction('copy_message', { id: product.id });
+              } catch (err) {
+                  alert('העתקה ידנית:\n' + text);
+              } finally {
+                  document.body.removeChild(textarea);
+              }
+          };
+
+          // פונקציה לשיתוף ישיר בוואטסאפ
+          const shareToWhatsapp = (product) => {
+              const url = window.location.origin + '/?id=' + product.id;
+              const text = `היי! הנה הלינק ל*${product.title.he}* שחיפשת:\n${url}\n\nיש שם אפשרות להזמין גם מטמו וגם מאלי אקספרס. תהנה!`;
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+              logAction('share_whatsapp_direct', { id: product.id });
           };
 
           // פונקציה משופרת לשיתוף (Native Share)
@@ -431,20 +354,22 @@
 
                             <div className="space-y-3">
                                 {landingProduct.temuLink && (
+                                    // שינוי שם האירוע ל-campaign_convert_temu כדי להבדיל מלחיצה רגילה
                                     <a href={landingProduct.temuLink} target="_blank" onClick={() => logAction('campaign_convert_temu', { product_id: landingProduct.id })} className="block w-full bg-gradient-to-r from-[#fb7701] to-[#ff9900] hover:from-[#e06a00] hover:to-[#e06a00] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <Tag size={24} /> {t.buyOnTemu}
                                     </a>
                                 )}
                                 {landingProduct.aliLink && (
+                                    // שינוי שם האירוע ל-campaign_convert_ali כדי להבדיל מלחיצה רגילה
                                     <a href={landingProduct.aliLink} target="_blank" onClick={() => logAction('campaign_convert_ali', { product_id: landingProduct.id })} className="block w-full bg-gradient-to-r from-[#ff4747] to-[#ff2d1d] hover:from-[#d63b3b] hover:to-[#d63b3b] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <ExternalLink size={24} /> {t.buyOnAli}
                                     </a>
                                 )}
                             </div>
                             
-                            {/* כפתור שיתוף כללי */}
+                            {/* כפתור שיתוף כללי - כעת רק מעתיק את הקישור */}
                             <button 
-                                onClick={() => shareNative(landingProduct)}
+                                onClick={() => copyFullMessage(landingProduct)}
                                 className="w-full bg-[#3b82f6] hover:bg-[#2563eb] text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 mt-4 transition-colors border border-white/10"
                             >
                                 <Share2 size={20} />
@@ -473,13 +398,13 @@
                   </div>
               )}
 
-              {/* Super Header */}
+              {/* Super Header - נקי ומינימליסטי */}
               <div className="flex-none bg-black/20 border-b border-white/5 py-1.5 px-4 flex items-center justify-center gap-2 relative overflow-hidden shadow-sm z-[60]">
                  <div className="flex items-center gap-2 relative z-10">
-                    <CogSimple size={14} className="text-white/70 animate-spin-slow" />
+                    <CogSimple size={16} className="text-white/70 animate-spin-slow" />
                     <span className="font-bold tracking-[0.2em] text-white/50 text-[10px] uppercase">Ecosystem</span>
                  </div>
-                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 2.6</div>
+                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 2.9</div>
                  <button onClick={toggleLang} className="absolute ltr:right-4 rtl:right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/50 hover:text-white transition-colors border border-white/10 px-2 py-0.5 rounded">
                     {lang === 'he' ? 'EN' : 'HE'}
                  </button>
@@ -520,9 +445,9 @@
                     </div>
 
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                      {['all', 'home', 'kitchen', 'munfatzim'].map((cat) => (
+                      {['all', 'home', 'kitchen', 'munfatzim', 'favorites'].map((cat) => (
                         <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border border-white/10 ${selectedCategory === cat ? 'bg-white/10 text-white shadow-lg border-white/20' : 'bg-transparent text-white/50 hover:bg-white/5'}`}>
-                            {cat === 'all' ? t.catAll : cat === 'home' ? t.catHome : cat === 'kitchen' ? t.catKitchen : cat === 'munfatzim' ? (<span>👻 {t.catMunfatzim}</span>) : t.catGadgets}
+                            {cat === 'all' ? t.catAll : cat === 'home' ? t.catHome : cat === 'kitchen' ? t.catKitchen : cat === 'munfatzim' ? (<span>👻 {t.catMunfatzim}</span>) : cat === 'favorites' ? (<span>❤️ {t.catFavorites}</span>) : t.catGadgets}
                         </button>
                       ))}
                     </div>
@@ -536,6 +461,13 @@
                               </div>
                           )}
                           
+                          <button
+                             onClick={(e) => { e.stopPropagation(); toggleFavorite(product.id); }}
+                             className={`absolute top-2 ${lang === 'he' ? 'right-2' : 'left-2'} z-20 p-2 rounded-full transition-all duration-300 ${favorites.includes(product.id) ? 'text-red-500 scale-110' : 'text-white/30 hover:text-white/60 hover:scale-105'}`}
+                          >
+                             <Heart size={20} className={favorites.includes(product.id) ? 'fill-current animate-heart' : ''} />
+                          </button>
+
                           <div className="p-4 flex gap-4">
                             <div className="w-20 h-20 bg-black/20 rounded-xl flex items-center justify-center text-4xl shadow-inner shadow-black/30 shrink-0 group-hover:scale-105 transition-transform emoji-img border border-white/5">
                                 {product.image}
@@ -556,6 +488,7 @@
                           </div>
                           
                           <div className="grid grid-cols-[1fr_auto_1fr] divide-x divide-x-reverse divide-white/5 border-t border-white/5">
+                            {/* AliExpress Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/ali">
                                 {product.aliLink ? (
                                     <a href={product.aliLink} target="_blank" onClick={() => logAction('click_ali_regular', { product_id: product.id })} className="flex items-center gap-2 text-sm font-medium text-[#ff4747] group-hover/ali:brightness-110 flex-1 justify-center h-full">
@@ -568,16 +501,18 @@
                                 )}
                             </div>
 
+                            {/* Share Button (Middle) */}
                             <div className="flex justify-center items-center px-2">
                                 <button 
-                                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); shareNative(product); }}
+                                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); copyFullMessage(product); }}
                                     className="p-1.5 text-white/30 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-                                    title="שתף מוצר"
+                                    title="העתק הודעה מוכנה"
                                 >
                                     <Share2 size={16} />
                                 </button>
                             </div>
 
+                            {/* Temu Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/temu">
                                 {product.temuLink ? (
                                     <a href={product.temuLink} target="_blank" onClick={() => logAction('click_temu_regular', { product_id: product.id })} className="flex items-center gap-2 text-sm font-medium text-yellow-400 group-hover/temu:text-yellow-300 flex-1 justify-center h-full">
@@ -602,7 +537,7 @@
                     <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f0418] border border-pink-500/20 rounded-3xl p-6 text-center space-y-6 relative overflow-hidden shadow-2xl">
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500"></div>
                       
-                      <div className="w-full aspect-video bg-black/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-lg border border-white/5">
+                      <div className="w-full aspect-[5057/3371] bg-black/40 rounded-xl overflow-hidden flex items-center justify-center relative shadow-lg border border-white/5">
                           <img 
                             src="show.jpg" 
                             alt="פוסטר המופע" 
@@ -644,6 +579,10 @@
                       <div className="w-16 h-16 bg-[#0e7490]/40 rounded-2xl mx-auto flex items-center justify-center text-cyan-200 mb-2 border border-cyan-500/30 shadow-lg shadow-cyan-500/20"><Briefcase size={32} /></div>
                       <div className="space-y-2 relative z-10"><h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-lg">{t.workshopTitle} {t.workshopTitleSuffix}</h2><span className="text-xs font-bold text-cyan-200 bg-[#164e63]/60 border border-cyan-500/30 px-3 py-1 rounded-full uppercase tracking-wider">{t.workshopSubtitle}</span></div>
                       <div className="space-y-4 text-gray-100 text-sm leading-relaxed font-light"><p>{t.workshopDesc1}<br/>{t.workshopDesc2}</p><p className="font-bold text-white">{t.workshopMain}</p><ul className="text-start space-y-2 bg-black/20 p-4 rounded-xl border border-cyan-500/20 mx-2"><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet1}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet2}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet3}</li></ul></div>
+                      {/* הוראות להחלפת מספר טלפון:
+                          1. שנה את המספר למטה (9725XXXXXXXX) למספר האמיתי שלך.
+                          2. אל תשכח את הקידומת 972 בהתחלה (בלי אפס).
+                      */}
                       <a href="https://wa.me/972500000000" target="_blank" onClick={() => logAction('click_whatsapp', {})} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
                         <MessageCircle size={20} />
                         {t.workshopCTA}
