@@ -32,7 +32,13 @@
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-spin-slow { animation: spin-slow 12s linear infinite; }
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px) translateX(-50%); } to { opacity: 1; transform: translateY(0) translateX(-50%); } }
-        @keyframes heart-beat { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        
+        /* אנימציית לב פועם */
+        @keyframes heart-beat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
         .animate-heart { animation: heart-beat 0.3s ease-in-out; }
 
         /* רקע סגול חציל עמוק ומט */
@@ -48,7 +54,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- הגדרות מעקב (הנתונים שלך) ---
+        // --- הגדרות מעקב (עם הנתונים שלך) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDcOi6aEwWsAPAqz1_1bsxxqjj2drKrFlA",
             authDomain: "gadgetorobject.firebaseapp.com",
@@ -71,12 +77,9 @@
 
         const logAction = (eventName, params) => {
             if (analytics) {
-                // דיווח לגוגל (עם מצב דיבאג)
-                const eventParams = { ...params, debug_mode: true };
-                analytics.logEvent(eventName, eventParams);
-                console.log(`🔥 Sending Firebase Event: ${eventName}`, eventParams);
-            } else {
-                console.warn("Analytics not ready yet");
+                // transport: 'beacon' מבטיח שהמידע יישלח גם אם המשתמש עוזב את הדף מיד
+                analytics.logEvent(eventName, { ...params, debug_mode: true, transport: 'beacon' });
+                console.log("🔥 Event Sent:", eventName, params);
             }
         };
 
@@ -99,15 +102,83 @@
         const ArrowLeft = (props) => <IconBase {...props}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></IconBase>;
         const Share2 = (props) => <IconBase {...props}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></IconBase>;
         const Heart = (props) => <IconBase {...props}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></IconBase>;
+        const Copy = (props) => <IconBase {...props}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></IconBase>;
 
         // --- נתוני המוצרים ---
         const productsData = [
-             { id: '104', title: { he: 'תותן (שולף תותים)', en: 'Strawberry Huller' }, price: '~6₪', category: 'kitchen', image: '🍓', temuLink: 'https://temu.to/k/egmhtt9rzj0', aliLink: 'https://s.click.aliexpress.com/e/_c2yHcfCR', description: { he: 'מוציא את העוקץ בלי ללכלך את הידיים. גאוני ופשוט.', en: 'Removes the stem without dirtying your hands. Genius and simple.' }, status: 'nice', isPinned: true, dateAdded: '2023-01-01' },
-             { id: '101', title: { he: 'שפריצר שמן זית', en: 'Olive Oil Sprayer' }, price: '~18₪ - 30₪', category: 'kitchen', image: '🫒', temuLink: 'https://temu.to/k/eskv4ma203l', aliLink: 'https://s.click.aliexpress.com/e/_c4OHgMnt', description: { he: 'מתיז שמן זית שני מצבים. חוסך קלוריות ומונע בלאגן.', en: 'Two-mode olive oil sprayer. Saves calories and prevents mess.' }, status: 'high', dateAdded: '2023-10-25' },
-             { id: '102', title: { he: 'סל כביסה מתקפל', en: 'Collapsible Laundry Basket' }, price: '~25₪ - 50₪', category: 'home', image: '🧺', temuLink: 'https://temu.to/k/ewtyxvdcjoc', aliLink: '', description: { he: 'סל כביסה מתקפל לעובי דק. לשים לב לגודל לפני שמזמינים.', en: 'Collapsible laundry basket, folds thin. Check dimensions before ordering.' }, status: 'high', dateAdded: '2023-10-26' },
-             { id: '103', title: { he: 'תבנית ביצים נשלפת', en: 'Retractable Egg Drawer' }, price: '~18₪ - 55₪', category: 'kitchen', image: '🥚', temuLink: 'https://temu.to/k/ewaw38cr21j', aliLink: 'https://s.click.aliexpress.com/e/_c3sDh6af', description: { he: 'מגירה נשלפת למקרר, עושה סדר וחוסך מקום. המחיר משתנה לפי מסילות/קומות.', en: 'Retractable drawer for the fridge, organizes and saves space. Price varies by size/tiers.' }, status: 'norm', dateAdded: '2023-10-27' },
-             { id: '105', title: { he: 'צנצנת חמוצים מתהפכת', en: 'Flipping Pickle Jar' }, price: '~25₪ - 45₪', category: 'kitchen', image: '🥒', temuLink: 'https://temu.to/k/el0byhgj7sy', aliLink: 'https://s.click.aliexpress.com/e/_c4q30Xp9', description: { he: 'פטנט גאוני שמפריד את המים מהחמוצים כשרוצים לנשנש, ומחזיר אותם למים כשמסיימים.', en: 'Genius patent that separates juice from pickles for serving, and flips back for storage.' }, status: 'norm', dateAdded: '2023-10-28' },
-             { id: '901', title: { he: 'לוח קיפול', en: 'Folding Board' }, price: '~25₪ - 45₪', category: 'munfatzim', image: '👕', temuLink: 'https://temu.to/k/ez52sauj9vx', aliLink: 'https://s.click.aliexpress.com/e/_c3pziYnH', description: { he: 'מסייע לקיפול חולצות בצורה מסודרת וישרה. יכול לסייע לכם אם אתם מתקשים אבל כנראה שבסוף תעדיפו פשוט לקפל לבד.', en: 'Helps fold shirts neatly and straight. Can assist if you struggle, but you\'ll probably prefer folding manually in the end.' }, status: 'nice', dateAdded: '2023-10-29' }
+             { 
+                 id: '104', 
+                 title: { he: 'תותן (שולף תותים)', en: 'Strawberry Huller' }, 
+                 price: '~6₪', 
+                 category: 'kitchen', 
+                 image: '🍓', 
+                 temuLink: 'https://temu.to/k/egmhtt9rzj0', 
+                 aliLink: 'https://s.click.aliexpress.com/e/_c2yHcfCR', 
+                 description: { he: 'מוציא את העוקץ בלי ללכלך את הידיים. גאוני ופשוט.', en: 'Removes the stem without dirtying your hands. Genius and simple.' }, 
+                 status: 'nice', 
+                 isPinned: true, 
+                 dateAdded: '2023-01-01' 
+             },
+             { 
+                 id: '101', 
+                 title: { he: 'שפריצר שמן זית', en: 'Olive Oil Sprayer' }, 
+                 price: '~18₪ - 30₪', 
+                 category: 'kitchen', 
+                 image: '🫒', 
+                 temuLink: 'https://temu.to/k/eskv4ma203l', 
+                 aliLink: 'https://s.click.aliexpress.com/e/_c4OHgMnt', 
+                 description: { he: 'מתיז שמן זית שני מצבים. חוסך קלוריות ומונע בלאגן.', en: 'Two-mode olive oil sprayer. Saves calories and prevents mess.' }, 
+                 status: 'high', 
+                 dateAdded: '2023-10-25' 
+             },
+             { 
+                 id: '102', 
+                 title: { he: 'סל כביסה מתקפל', en: 'Collapsible Laundry Basket' }, 
+                 price: '~25₪ - 50₪', 
+                 category: 'home', 
+                 image: '🧺', 
+                 temuLink: 'https://temu.to/k/ewtyxvdcjoc', 
+                 aliLink: '', 
+                 description: { he: 'סל כביסה מתקפל לעובי דק. לשים לב לגודל לפני שמזמינים.', en: 'Collapsible laundry basket, folds thin. Check dimensions before ordering.' }, 
+                 status: 'high', 
+                 dateAdded: '2023-10-26' 
+             },
+             { 
+                 id: '103', 
+                 title: { he: 'תבנית ביצים נשלפת', en: 'Retractable Egg Drawer' }, 
+                 price: '~18₪ - 55₪', 
+                 category: 'kitchen', 
+                 image: '🥚', 
+                 temuLink: 'https://temu.to/k/ewaw38cr21j', 
+                 aliLink: 'https://s.click.aliexpress.com/e/_c3sDh6af', 
+                 description: { he: 'מגירה נשלפת למקרר, עושה סדר וחוסך מקום. פתרון אלגנטי למקרר מבולגן.', en: 'Retractable drawer for the fridge, organizes and saves space. Elegant solution for a messy fridge.' }, 
+                 status: 'norm', 
+                 dateAdded: '2023-10-27' 
+             },
+             { 
+                 id: '105', 
+                 title: { he: 'צנצנת חמוצים מתהפכת', en: 'Flipping Pickle Jar' }, 
+                 price: '~25₪ - 45₪', 
+                 category: 'kitchen', 
+                 image: '🥒', 
+                 temuLink: 'https://temu.to/k/el0byhgj7sy', 
+                 aliLink: 'https://s.click.aliexpress.com/e/_c4q30Xp9', 
+                 description: { he: 'פטנט גאוני שמפריד את המים מהחמוצים כשרוצים לנשנש, ומחזיר אותם למים כשמסיימים.', en: 'Genius patent that separates juice from pickles for serving, and flips back for storage.' }, 
+                 status: 'norm', 
+                 dateAdded: '2023-10-28' 
+             },
+             { 
+                 id: '901', 
+                 title: { he: 'לוח קיפול', en: 'Folding Board' }, 
+                 price: '~25₪ - 45₪', 
+                 category: 'munfatzim', 
+                 image: '👕', 
+                 temuLink: 'https://temu.to/k/ez52sauj9vx', 
+                 aliLink: 'https://s.click.aliexpress.com/e/_c3pziYnH', 
+                 description: { he: 'פתרון הנדסי לבעיה שלא ידעתם שיש לכם. הופך ערימת כביסה למגדל ארכיטקטוני. האם זה מהיר יותר? לא בטוח. האם זה מספק יותר? חד משמעית.', en: 'Engineering solution to a problem you didn\'t know you had. Turns a pile of laundry into an architectural tower. Faster? Not sure. More satisfying? Absolutely.' }, 
+                 status: 'nice', 
+                 dateAdded: '2023-10-29' 
+             }
         ];
 
         const content = {
@@ -297,25 +368,8 @@
 
           // פונקציה משופרת לשיתוף (Native Share)
           const shareNative = async (product) => {
-              const url = window.location.origin + '/?id=' + product.id;
-              const title = `חפץ חפיץ: ${product.title.he}`;
-              const text = `תראה איזה חפץ מגניב: ${product.title.he}`;
-              
-              if (navigator.share) {
-                  try {
-                      await navigator.share({
-                          title: title,
-                          text: text,
-                          url: url,
-                      });
-                      logAction('native_share', { id: product.id });
-                  } catch (err) {
-                      console.log('Error sharing:', err);
-                  }
-              } else {
-                  // Fallback: Copy link if sharing not supported
-                  copyLink(product.id);
-              }
+              // חזרה להעתקה רגילה לפי בקשתך
+              copyLink(product.id);
           };
 
           // --- תצוגת דף מוצר בודד ---
@@ -338,6 +392,8 @@
                             <div className="text-center space-y-2">
                                 <h2 className="text-white/60 text-sm font-medium">{t.directLinkTitle}</h2>
                                 <h1 className="text-3xl font-black text-white leading-tight drop-shadow-lg">{landingProduct.title[lang]}</h1>
+                                {/* הצגת מזהה המוצר בדף הנחיתה */}
+                                <div className="text-xs text-white/30 font-mono mt-1">ID: {landingProduct.id}</div>
                             </div>
 
                             {/* כרטיסיית דף נחיתה - סגול בהיר מט */}
@@ -367,12 +423,12 @@
                                 )}
                             </div>
                             
-                            {/* כפתור שיתוף כללי - כעת רק מעתיק את הקישור */}
+                            {/* כפתור שיתוף כללי */}
                             <button 
                                 onClick={() => copyFullMessage(landingProduct)}
                                 className="w-full bg-[#3b82f6] hover:bg-[#2563eb] text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 mt-4 transition-colors border border-white/10"
                             >
-                                <Share2 size={20} />
+                                <Copy size={20} />
                                 {t.shareWhatsapp}
                             </button>
                             
@@ -404,7 +460,7 @@
                     <CogSimple size={16} className="text-white/70 animate-spin-slow" />
                     <span className="font-bold tracking-[0.2em] text-white/50 text-[10px] uppercase">Ecosystem</span>
                  </div>
-                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 2.9</div>
+                 <div className="absolute ltr:left-4 rtl:left-4 top-1/2 -translate-y-1/2 text-[9px] text-white/30 font-mono tracking-widest hidden sm:block">V 3.0</div>
                  <button onClick={toggleLang} className="absolute ltr:right-4 rtl:right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white/50 hover:text-white transition-colors border border-white/10 px-2 py-0.5 rounded">
                     {lang === 'he' ? 'EN' : 'HE'}
                  </button>
@@ -474,7 +530,10 @@
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex justify-between items-start">
-                                  <h3 className="font-bold text-gray-100 truncate">{product.title[lang]}</h3>
+                                  <div className="flex-1">
+                                      <h3 className="font-bold text-gray-100 truncate">{product.title[lang]}</h3>
+                                      <span className="text-[10px] text-white/30 font-mono">ID: {product.id}</span>
+                                  </div>
                                   <span className="bg-black/20 text-white/70 border border-white/5 px-2 py-0.5 rounded text-sm font-mono tracking-tight whitespace-nowrap">{product.price}</span>
                               </div>
                               <p className="text-xs text-white/50 mt-1 line-clamp-2 font-light">{product.description[lang]}</p>
