@@ -75,20 +75,10 @@
             }
         } catch (e) { console.error("Analytics Error:", e); }
 
-        /**
-         * פונקציית דיווח משודרגת
-         * transport_type: 'beacon' מבטיח שהמידע יישלח גם אם הדף נסגר מיד (קריטי לקישורים חיצוניים)
-         */
         const logAction = (eventName, params) => {
             if (analytics) {
-                analytics.logEvent(eventName, { 
-                    ...params, 
-                    debug_mode: true, 
-                    transport_type: 'beacon' 
-                });
+                analytics.logEvent(eventName, { ...params, debug_mode: true, transport_type: 'beacon' });
                 console.log("🔥 Event Sent:", eventName, params);
-            } else {
-                console.log("⚠️ Analytics not ready:", eventName, params);
             }
         };
 
@@ -112,8 +102,9 @@
         const Share2 = (props) => <IconBase {...props}><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></IconBase>;
         const Heart = (props) => <IconBase {...props}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></IconBase>;
         const Copy = (props) => <IconBase {...props}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></IconBase>;
+        const AdminUser = (props) => <IconBase {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></IconBase>;
 
-        // --- נתוני המוצרים ---
+        // --- נתוני המוצרים (מעודכן לפי CSV) ---
         const productsData = [
              { 
                  id: '104', 
@@ -147,7 +138,7 @@
                  category: 'home', 
                  image: '🧺', 
                  temuLink: 'https://temu.to/k/ewtyxvdcjoc', 
-                 aliLink: '', 
+                 aliLink: '', // אין לינק ב-CSV
                  description: { he: 'סל כביסה מתקפל לעובי דק. לשים לב לגודל לפני שמזמינים.', en: 'Collapsible laundry basket, folds thin. Check dimensions before ordering.' }, 
                  status: 'high', 
                  dateAdded: '2023-10-26' 
@@ -158,10 +149,10 @@
                  price: '~18₪ - 55₪', 
                  category: 'kitchen', 
                  image: '🥚', 
-                 temuLink: 'https://temu.to/k/ewaw38cr21j', 
+                 temuLink: 'https://temu.to/k/ewaw38cr21j', // עודכן לפי CSV
                  aliLink: 'https://s.click.aliexpress.com/e/_c3sDh6af', 
                  description: { he: 'מגירה נשלפת למקרר, עושה סדר וחוסך מקום. פתרון אלגנטי למקרר מבולגן.', en: 'Retractable drawer for the fridge, organizes and saves space. Elegant solution for a messy fridge.' }, 
-                 status: 'high', 
+                 status: 'high', // עודכן למומלץ מאוד לפי CSV
                  dateAdded: '2023-10-27' 
              },
              { 
@@ -192,10 +183,10 @@
 
         const content = {
             he: {
-                shopTitle: "חפץ", shopTitleSuffix: "או חפיץ", showTitle: "פאק בסיסטם", showSubtitle: "קיצור תולדות הדפקט", showManifesto: "כשסטנדפיסט מתוסכל עם תובנות מושחזות\nפוגש ארבעה קומיקאים מופרעים\nשלוקחים את הכל לקצה.\nפאק בסיסטם הוא מניפסט אבסורדי\nשמתעורר לחיים כדי לחגוג את הבעיה,\nלתת קצת יחס לחצי הכוס הריקה\nולנסות להנות גם ממה שאין.", workshopTitle: "באג", workshopTitleSuffix: "בסיסטם", navShop: "חנות", navShow: "מופע", navWorkshops: "סדנאות", searchPlaceholder: "חפש חפץ...", catAll: "הכל", catHome: "לבית", catKitchen: "מטבח", catGadgets: "גאדג'טים", catMunfatzim: "חפיצים מונפצים", catFavorites: "המועדפים שלי", recHigh: "מומלץ מאוד", recNorm: "מומלץ", recNice: "נחמד", outOfStock: "אזל המלאי", workshopSubtitle: "סדנאות לארגונים", workshopDesc1: "רוצים להכניס באג בסיסטם של הארגון שלכם?", workshopDesc2: "להעיר את הצוות, לשבור את השגרה ולהתחבר מחדש דרך הומור?", workshopMain: "סדנאות חשיבה יצירתית, אימפרוב וסטוריטלינג בהנחיית גיא כהן.", workshopBullet1: "שיפור התקשורת בצוות", workshopBullet2: "פיתוח יצירתיות ופתרון בעיות", workshopBullet3: "המון הומור וכיף", workshopCTA: "דברו איתי בוואטסאפ", priceDisclaimer: "* המחירים משוערים ועשויים להשתנות בהתאם לספק, למידות ולמלאי.", sortBy: "מיון לפי א-ב", backToCatalog: "חזרה לקטלוג המלא", directLinkTitle: "היי! הנה החפץ שחיפשת:", buyOnAli: "קנה ב-AliExpress", buyOnTemu: "קנה ב-Temu", linkCopied: "ההודעה הועתקה! מוכנה להדבקה", shareWhatsapp: "שתף את החפץ"
+                shopTitle: "חפץ", shopTitleSuffix: "או חפיץ", showTitle: "פאק בסיסטם", showSubtitle: "קיצור תולדות הדפקט", showManifesto: "כשסטנדפיסט מתוסכל עם תובנות מושחזות\nפוגש ארבעה קומיקאים מופרעים\nשלוקחים את הכל לקצה.\nפאק בסיסטם הוא מניפסט אבסורדי\nשמתעורר לחיים כדי לחגוג את הבעיה,\nלתת קצת יחס לחצי הכוס הריקה\nולנסות להנות גם ממה שאין.", workshopTitle: "באג", workshopTitleSuffix: "בסיסטם", navShop: "חנות", navShow: "מופע", navWorkshops: "סדנאות", searchPlaceholder: "חפש חפץ...", catAll: "הכל", catHome: "לבית", catKitchen: "מטבח", catGadgets: "גאדג'טים", catMunfatzim: "חפיצים מונפצים", catFavorites: "המועדפים שלי", recHigh: "מומלץ מאוד", recNorm: "מומלץ", recNice: "נחמד", outOfStock: "אזל המלאי", workshopSubtitle: "סדנאות לארגונים", workshopDesc1: "רוצים להכניס באג בסיסטם של הארגון שלכם?", workshopDesc2: "להעיר את הצוות, לשבור את השגרה ולהתחבר מחדש דרך הומור?", workshopMain: "סדנאות חשיבה יצירתית, אימפרוב וסטוריטלינג בהנחיית גיא כהן.", workshopBullet1: "שיפור התקשורת בצוות", workshopBullet2: "פיתוח יצירתיות ופתרון בעיות", workshopBullet3: "המון הומור וכיף", workshopCTA: "דברו איתי בוואטסאפ", priceDisclaimer: "* המחירים משוערים ועשויים להשתנות בהתאם לספק, למידות ולמלאי.", sortBy: "מיון לפי א-ב", backToCatalog: "חזרה לקטלוג המלא", directLinkTitle: "היי! הנה החפץ שחיפשת:", buyOnAli: "קנה ב-AliExpress", buyOnTemu: "קנה ב-Temu", linkCopied: "ההודעה הועתקה! מוכנה להדבקה", shareWhatsapp: "העתק הודעה לשליחה"
             },
             en: {
-                shopTitle: "Hafetz", shopTitleSuffix: "Hafitz", showTitle: "Fuck BaSystem", showSubtitle: "A Brief History of the Defect", showManifesto: "When a frustrated stand-up comedian with sharp insights\nmeets four disturbed comedians\nwho take everything to the edge.\nFuck BaSystem is an absurd manifesto\ncoming to life to celebrate the problem,\ngive some attention to the empty half of the glass\nand try to enjoy what isn't there.", workshopTitle: "Bug", workshopTitleSuffix: "In The System", navShop: "Shop", navShow: "Show", navWorkshops: "Workshops", searchPlaceholder: "Search item...", catAll: "All", catHome: "Home", catKitchen: "Kitchen", catGadgets: "Gadgets", catMunfatzim: "Useless Gadgets", catFavorites: "My Favorites", recHigh: "Highly Recommended", recNorm: "Recommended", recNice: "Nice to Have", outOfStock: "Out of Stock", workshopSubtitle: "Corporate Workshops", workshopDesc1: "Want to introduce a bug into your organization's system?", workshopDesc2: "Wake up the team, break the routine, and reconnect through humor?", workshopMain: "Creative thinking, improv, and storytelling workshops led by Guy Cohen.", workshopBullet1: "Improving team communication", workshopBullet2: "Developing creativity & problem solving", workshopBullet3: "Lots of humor and fun", workshopCTA: "Talk to me on WhatsApp", priceDisclaimer: "* Prices are estimated and subject to change by supplier, size and stock.", sortBy: "Sort A-Z", backToCatalog: "Back to Full Catalog", directLinkTitle: "Hey! Here is the item you looked for:", buyOnAli: "Buy on AliExpress", buyOnTemu: "Buy on Temu", linkCopied: "Link Copied! Ready to paste.", shareWhatsapp: "Share Item"
+                shopTitle: "Hafetz", shopTitleSuffix: "Hafitz", showTitle: "Fuck BaSystem", showSubtitle: "A Brief History of the Defect", showManifesto: "When a frustrated stand-up comedian with sharp insights\nmeets four disturbed comedians\nwho take everything to the edge.\nFuck BaSystem is an absurd manifesto\ncoming to life to celebrate the problem,\ngive some attention to the empty half of the glass\nand try to enjoy what isn't there.", workshopTitle: "Bug", workshopTitleSuffix: "In The System", navShop: "Shop", navShow: "Show", navWorkshops: "Workshops", searchPlaceholder: "Search item...", catAll: "All", catHome: "Home", catKitchen: "Kitchen", catGadgets: "Gadgets", catMunfatzim: "Useless Gadgets", catFavorites: "My Favorites", recHigh: "Highly Recommended", recNorm: "Recommended", recNice: "Nice to Have", outOfStock: "Out of Stock", workshopSubtitle: "Corporate Workshops", workshopDesc1: "Want to introduce a bug into your organization's system?", workshopDesc2: "Wake up the team, break the routine, and reconnect through humor?", workshopMain: "Creative thinking, improv, and storytelling workshops led by Guy Cohen.", workshopBullet1: "Improving team communication", workshopBullet2: "Developing creativity & problem solving", workshopBullet3: "Lots of humor and fun", workshopCTA: "Talk to me on WhatsApp", priceDisclaimer: "* Prices are estimated and subject to change by supplier, size and stock.", sortBy: "Sort A-Z", backToCatalog: "Back to Full Catalog", directLinkTitle: "Hey! Here is the item you looked for:", buyOnAli: "Buy on AliExpress", buyOnTemu: "Buy on Temu", linkCopied: "Link Copied! Ready to paste.", shareWhatsapp: "Copy Share Message"
             }
         };
 
@@ -209,6 +200,9 @@
           const [landingProduct, setLandingProduct] = useState(null);
           const [showToast, setShowToast] = useState(false);
           const [favorites, setFavorites] = useState([]);
+          
+          // --- מנגנון מנהל (Admin) ---
+          const [isAdmin, setIsAdmin] = useState(false);
 
           useEffect(() => {
               const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -221,22 +215,21 @@
               }
 
               const params = new URLSearchParams(window.location.search);
+              
+              // בדיקת מצב מנהל
+              if (params.get('admin') === 'true') {
+                  setIsAdmin(true);
+              }
+
               const id = params.get('id');
               if (id) {
                   const found = productsData.find(p => p.id === id);
                   if (found) {
                       setLandingProduct(found);
-                      // דיווח: נחיתה ישירה על מוצר
-                      logAction('view_item', { 
-                          item_id: found.id, 
-                          item_name: found.title.en,
-                          item_category: found.category,
-                          source: 'direct_link' 
-                      });
+                      logAction('view_product_landing', { id: found.id, name: found.title.en, source: 'external_link' });
                   }
               } else {
-                  // דיווח: דף הבית (כללי)
-                  logAction('page_view', { page_title: 'Home', page_path: '/' });
+                  logAction('page_view', { tab: 'home' });
               }
               document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
               document.documentElement.lang = lang;
@@ -244,42 +237,17 @@
 
           const t = content[lang];
 
-          const toggleFavorite = (product) => {
+          const toggleFavorite = (productId) => {
               let newFavorites;
-              if (favorites.includes(product.id)) {
-                  newFavorites = favorites.filter(id => id !== product.id);
-                  logAction('remove_from_wishlist', { 
-                      item_id: product.id,
-                      item_name: product.title.en 
-                  });
+              if (favorites.includes(productId)) {
+                  newFavorites = favorites.filter(id => id !== productId);
+                  logAction('remove_from_wishlist', { id: productId });
               } else {
-                  newFavorites = [...favorites, product.id];
-                  logAction('add_to_wishlist', { 
-                      item_id: product.id,
-                      item_name: product.title.en 
-                  });
+                  newFavorites = [...favorites, productId];
+                  logAction('add_to_wishlist', { id: productId });
               }
               setFavorites(newFavorites);
               localStorage.setItem('favorites', JSON.stringify(newFavorites));
-          };
-
-          const handleTabChange = (tabName) => {
-              setActiveTab(tabName);
-              setIsMenuOpen(false);
-              logAction('screen_view', { 
-                  screen_name: tabName,
-                  app_name: 'Hafetz Hafitz'
-              });
-          };
-
-          const handleOutgoingClick = (product, destination, link) => {
-              logAction('outgoing_click', {
-                  item_id: product.id,
-                  item_name: product.title.en,
-                  item_category: product.category,
-                  destination: destination,
-                  link_url: link
-              });
           };
 
           const filteredAndSortedProducts = useMemo(() => {
@@ -343,6 +311,7 @@
                 <div className="w-8 h-8 bg-purple-500 rounded-sm flex items-center justify-center rotate-3 hover:rotate-0 transition-transform shadow-lg shadow-purple-500/30">
                   <span className="text-xl">📦</span>
                 </div>
+                {/* לוגו לבן נקי */}
                 <h1 className="font-black text-xl tracking-tighter text-white drop-shadow-md">{t.shopTitle} <span className="font-light text-purple-200">{t.shopTitleSuffix}</span></h1>
               </div>
             );
@@ -351,9 +320,29 @@
           const toggleLang = () => {
               setLang(prev => prev === 'he' ? 'en' : 'he');
               setIsMenuOpen(false);
-              logAction('change_language', { language: lang === 'he' ? 'en' : 'he' });
           };
 
+          const copyLink = (id) => {
+              const url = window.location.origin + '/?id=' + id;
+              const input = document.createElement('input');
+              input.style.position = 'fixed';
+              input.style.opacity = '0';
+              input.value = url;
+              document.body.appendChild(input);
+              input.select();
+              try {
+                  document.execCommand('copy');
+                  setShowToast(true);
+                  setTimeout(() => setShowToast(false), 3000);
+                  logAction('share_link', { id });
+              } catch (err) {
+                  alert('העתקה ידנית: ' + url);
+              } finally {
+                  document.body.removeChild(input);
+              }
+          };
+
+          // פונקציה משופרת להעתקת הודעה מלאה (עבור המשתמש הרגיל)
           const copyFullMessage = (product) => {
               const url = window.location.origin + '/?id=' + product.id;
               const text = `היי! הנה הלינק ל*${product.title.he}* שחיפשת:\n${url}\n\nיש שם אפשרות להזמין גם מטמו וגם מאלי אקספרס. תהנה!`;
@@ -370,16 +359,42 @@
                   document.execCommand('copy');
                   setShowToast(true);
                   setTimeout(() => setShowToast(false), 3000);
-                  logAction('share_product', { 
-                      method: 'copy_text', 
-                      item_id: product.id, 
-                      item_name: product.title.en 
-                  });
+                  logAction('copy_message', { id: product.id });
               } catch (err) {
                   alert('העתקה ידנית:\n' + text);
               } finally {
                   document.body.removeChild(textarea);
               }
+          };
+
+          // --- פונקציה חדשה: שיתוף מנהל (Admin Share) ---
+          const handleAdminShare = (product) => {
+              const customerName = prompt("למי לשלוח? (שם הלקוח)");
+              if (!customerName) return;
+
+              const directTemuLink = product.temuLink || "אין קישור";
+              const directAliLink = product.aliLink || "אין קישור";
+              
+              // הטמפלט החדש והמדויק שביקשת
+              const text = `היי ${customerName} 👋
+ראיתי שביקשת קישור ל${product.title.he} ${product.image}
+
+הנה הקישור למוצר שבדקתי מטמו -
+${directTemuLink}
+
+במידה ומעדיפים לקנות מאלי אקספרס הנה קישור למוצר דומה עם ביקורות טובות (שלא בדקתי אותו ישירות)
+${directAliLink}
+
+תהנו 🛍️`;
+
+              // פתיחת וואטסאפ עם ההודעה
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+              logAction('admin_share_generated', { id: product.id, customer: customerName });
+          };
+
+          // פונקציה משופרת לשיתוף (Native Share) - רק העתקה
+          const shareNative = async (product) => {
+              copyLink(product.id);
           };
 
           // --- תצוגת דף מוצר בודד ---
@@ -402,9 +417,11 @@
                             <div className="text-center space-y-2">
                                 <h2 className="text-white/60 text-sm font-medium">{t.directLinkTitle}</h2>
                                 <h1 className="text-3xl font-black text-white leading-tight drop-shadow-lg">{landingProduct.title[lang]}</h1>
+                                {/* הצגת מזהה המוצר בדף הנחיתה */}
                                 <div className="text-xs text-white/30 font-mono mt-1">ID: {landingProduct.id}</div>
                             </div>
 
+                            {/* כרטיסיית דף נחיתה - סגול בהיר מט */}
                             <div className="bg-[#3b2152] rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden group border border-white/5">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 opacity-70"></div>
                                 <div className="text-8xl mb-6 drop-shadow-2xl transition-transform duration-500 group-hover:scale-110">{landingProduct.image}</div>
@@ -418,21 +435,18 @@
 
                             <div className="space-y-3">
                                 {landingProduct.temuLink && (
-                                    <a href={landingProduct.temuLink} target="_blank" 
-                                       onClick={() => handleOutgoingClick(landingProduct, 'Temu', landingProduct.temuLink)}
-                                       className="block w-full bg-gradient-to-r from-[#fb7701] to-[#ff9900] hover:from-[#e06a00] hover:to-[#e06a00] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
+                                    <a href={landingProduct.temuLink} target="_blank" onClick={() => logAction('campaign_convert_temu', { product_id: landingProduct.id, source: 'landing_page' })} className="block w-full bg-gradient-to-r from-[#fb7701] to-[#ff9900] hover:from-[#e06a00] hover:to-[#e06a00] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <Tag size={24} /> {t.buyOnTemu}
                                     </a>
                                 )}
                                 {landingProduct.aliLink && (
-                                    <a href={landingProduct.aliLink} target="_blank" 
-                                       onClick={() => handleOutgoingClick(landingProduct, 'AliExpress', landingProduct.aliLink)}
-                                       className="block w-full bg-gradient-to-r from-[#ff4747] to-[#ff2d1d] hover:from-[#d63b3b] hover:to-[#d63b3b] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
+                                    <a href={landingProduct.aliLink} target="_blank" onClick={() => logAction('campaign_convert_ali', { product_id: landingProduct.id, source: 'landing_page' })} className="block w-full bg-gradient-to-r from-[#ff4747] to-[#ff2d1d] hover:from-[#d63b3b] hover:to-[#d63b3b] text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex items-center justify-center gap-3 text-lg border border-white/10">
                                         <ExternalLink size={24} /> {t.buyOnAli}
                                     </a>
                                 )}
                             </div>
                             
+                            {/* כפתור שיתוף כללי */}
                             <button 
                                 onClick={() => copyFullMessage(landingProduct)}
                                 className="w-full bg-[#3b82f6] hover:bg-[#2563eb] text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 mt-4 transition-colors border border-white/10"
@@ -456,12 +470,14 @@
           return (
             <div className="flex flex-col h-full bg-theme text-gray-100 font-sans selection:bg-purple-500 selection:text-white" dir={lang === 'he' ? 'rtl' : 'ltr'}>
               
+              {/* Toast Notification */}
               {showToast && (
                   <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[100] bg-[#0f0418] text-white px-4 py-2 rounded-full shadow-2xl border border-white/10 flex items-center gap-2 animate-[fade-in-up_0.3s_ease-out]">
                       <span className="text-green-400">✓</span> {t.linkCopied}
                   </div>
               )}
 
+              {/* Super Header - נקי ומינימליסטי */}
               <div className="flex-none bg-black/20 border-b border-white/5 py-1.5 px-4 flex items-center justify-center gap-2 relative overflow-hidden shadow-sm z-[60]">
                  <div className="flex items-center gap-2 relative z-10">
                     <CogSimple size={16} className="text-white/70 animate-spin-slow" />
@@ -473,6 +489,7 @@
                  </button>
               </div>
 
+              {/* Header */}
               <header className="flex-none sticky top-0 z-50 bg-[#240a35]/95 backdrop-blur border-b border-white/5 shadow-lg h-16">
                 <div className="max-w-md mx-auto px-4 h-full flex items-center justify-between">
                   {getHeaderContent()}
@@ -486,14 +503,15 @@
                       <button onClick={toggleLang} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 font-bold border border-white/10 justify-center mb-2 text-white/80">
                         <Globe size={20} /> {lang === 'he' ? 'Switch to English' : 'עבור לעברית'}
                       </button>
-                      <button onClick={() => handleTabChange('products')} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><ShoppingBag size={20} className="text-yellow-400" /> {t.navShop}</button>
-                      <button onClick={() => handleTabChange('tickets')} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><Ticket size={20} className="text-pink-500" /> {t.navShow}</button>
-                      <button onClick={() => handleTabChange('workshops')} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><Briefcase size={20} className="text-cyan-400" /> {t.navWorkshops}</button>
+                      <button onClick={() => {setActiveTab('products'); setIsMenuOpen(false)}} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><ShoppingBag size={20} className="text-yellow-400" /> {t.navShop}</button>
+                      <button onClick={() => {setActiveTab('tickets'); setIsMenuOpen(false)}} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><Ticket size={20} className="text-pink-500" /> {t.navShow}</button>
+                      <button onClick={() => {setActiveTab('workshops'); setIsMenuOpen(false)}} className="p-3 text-start hover:bg-white/5 rounded-lg flex items-center gap-3 text-gray-100"><Briefcase size={20} className="text-cyan-400" /> {t.navWorkshops}</button>
                     </nav>
                   </div>
                 )}
               </header>
 
+              {/* Main Content */}
               <main className="flex-1 overflow-y-auto relative w-full max-w-md mx-auto">
                 {activeTab === 'products' && (
                   <div className="p-4 space-y-4 pb-6">
@@ -522,8 +540,19 @@
                               </div>
                           )}
                           
+                          {/* כפתור מנהל מוסתר */}
+                          {isAdmin && (
+                              <button 
+                                  onClick={(e) => { e.stopPropagation(); handleAdminShare(product); }}
+                                  className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-blue-600 p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+                                  title="Admin Share"
+                              >
+                                  <AdminUser size={20} className="text-white" />
+                              </button>
+                          )}
+
                           <button
-                             onClick={(e) => { e.stopPropagation(); toggleFavorite(product); }}
+                             onClick={(e) => { e.stopPropagation(); toggleFavorite(product.id); }}
                              className={`absolute top-2 ${lang === 'he' ? 'right-2' : 'left-2'} z-20 p-2 rounded-full transition-all duration-300 ${favorites.includes(product.id) ? 'text-red-500 scale-110' : 'text-white/30 hover:text-white/60 hover:scale-105'}`}
                           >
                              <Heart size={20} className={favorites.includes(product.id) ? 'fill-current animate-heart' : ''} />
@@ -555,9 +584,7 @@
                             {/* AliExpress Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/ali">
                                 {product.aliLink ? (
-                                    <a href={product.aliLink} target="_blank" 
-                                       onClick={() => handleOutgoingClick(product, 'AliExpress', product.aliLink)}
-                                       className="flex items-center gap-2 text-sm font-medium text-[#ff4747] group-hover/ali:brightness-110 flex-1 justify-center h-full">
+                                    <a href={product.aliLink} target="_blank" onClick={() => logAction('click_ali_regular', { product_id: product.id })} className="flex items-center gap-2 text-sm font-medium text-[#ff4747] group-hover/ali:brightness-110 flex-1 justify-center h-full">
                                         <ExternalLink size={14} /> AliExpress
                                     </a>
                                 ) : (
@@ -581,9 +608,7 @@
                             {/* Temu Link */}
                             <div className="flex justify-center items-center py-3 hover:bg-white/5 transition-colors group/temu">
                                 {product.temuLink ? (
-                                    <a href={product.temuLink} target="_blank" 
-                                       onClick={() => handleOutgoingClick(product, 'Temu', product.temuLink)}
-                                       className="flex items-center gap-2 text-sm font-medium text-yellow-400 group-hover/temu:text-yellow-300 flex-1 justify-center h-full">
+                                    <a href={product.temuLink} target="_blank" onClick={() => logAction('click_temu_regular', { product_id: product.id })} className="flex items-center gap-2 text-sm font-medium text-yellow-400 group-hover/temu:text-yellow-300 flex-1 justify-center h-full">
                                         <Tag size={14} /> Temu
                                     </a>
                                 ) : (
@@ -632,7 +657,7 @@
                         {t.showManifesto}
                       </div>
 
-                      <a href="https://linktr.ee/FuckBaSystem" target="_blank" onClick={() => logAction('outgoing_click', { destination: 'Linktree Tickets' })} className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-pink-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+                      <a href="https://linktr.ee/FuckBaSystem" target="_blank" onClick={() => logAction('click_tickets', {})} className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-pink-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
                         <Ticket size={20} />
                         לכרטיסים ופרטים נוספים
                       </a>
@@ -647,7 +672,7 @@
                       <div className="w-16 h-16 bg-[#0e7490]/40 rounded-2xl mx-auto flex items-center justify-center text-cyan-200 mb-2 border border-cyan-500/30 shadow-lg shadow-cyan-500/20"><Briefcase size={32} /></div>
                       <div className="space-y-2 relative z-10"><h2 className="text-3xl font-black tracking-tighter text-white drop-shadow-lg">{t.workshopTitle} {t.workshopTitleSuffix}</h2><span className="text-xs font-bold text-cyan-200 bg-[#164e63]/60 border border-cyan-500/30 px-3 py-1 rounded-full uppercase tracking-wider">{t.workshopSubtitle}</span></div>
                       <div className="space-y-4 text-gray-100 text-sm leading-relaxed font-light"><p>{t.workshopDesc1}<br/>{t.workshopDesc2}</p><p className="font-bold text-white">{t.workshopMain}</p><ul className="text-start space-y-2 bg-black/20 p-4 rounded-xl border border-cyan-500/20 mx-2"><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet1}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet2}</li><li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-cyan-400 rounded-full flex-shrink-0"></div> {t.workshopBullet3}</li></ul></div>
-                      <a href="https://wa.me/972500000000" target="_blank" onClick={() => logAction('outgoing_click', { destination: 'WhatsApp Workshops' })} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
+                      <a href="https://wa.me/972500000000" target="_blank" onClick={() => logAction('click_whatsapp', {})} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-cyan-900/50 transform transition hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
                         <MessageCircle size={20} />
                         {t.workshopCTA}
                       </a>
@@ -658,9 +683,9 @@
               </main>
 
               <nav className="flex-none bg-[#2D1B4E] border-t border-white/5 h-16 max-w-md mx-auto w-full flex justify-around items-center z-50">
-                <button onClick={() => handleTabChange('products')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'products' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : 'text-white/30 hover:text-white/60'}`}><ShoppingBag size={22} /><span className="text-[10px] font-medium">{t.navShop}</span></button>
-                <button onClick={() => handleTabChange('tickets')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'tickets' ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Ticket size={22} /><span className="text-[10px] font-medium">{t.navShow}</span></button>
-                <button onClick={() => handleTabChange('workshops')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'workshops' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Briefcase size={22} /><span className="text-[10px] font-medium">{t.navWorkshops}</span></button>
+                <button onClick={() => { setActiveTab('products'); logAction('nav_click', { tab: 'products' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'products' ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : 'text-white/30 hover:text-white/60'}`}><ShoppingBag size={22} /><span className="text-[10px] font-medium">{t.navShop}</span></button>
+                <button onClick={() => { setActiveTab('tickets'); logAction('nav_click', { tab: 'tickets' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'tickets' ? 'text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Ticket size={22} /><span className="text-[10px] font-medium">{t.navShow}</span></button>
+                <button onClick={() => { setActiveTab('workshops'); logAction('nav_click', { tab: 'workshops' }); }} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${activeTab === 'workshops' ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : 'text-white/30 hover:text-white/60'}`}><Briefcase size={22} /><span className="text-[10px] font-medium">{t.navWorkshops}</span></button>
               </nav>
             </div>
           );
